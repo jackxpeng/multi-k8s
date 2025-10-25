@@ -7,6 +7,9 @@ spec:
   parentRefs:
     - kind: Gateway
       name: web
+      sectionName: https
+  hostnames:
+    - app.local.test
   rules:
     - matches:
         - path: { type: PathPrefix, value: /api }

@@ -49,3 +49,28 @@ EOF
 
 route add 172.19.52.100 mask 255.255.255.255 172.19.52.253
     -p for permanent route
+
+
+Local HTTPS (Envoy Gateway + MetalLB + mkcert)
+
+# 1. Generate cert + secret
+mkcert -install
+mkcert app.local.test
+kubectl create secret tls app-tls \
+  --cert=app.local.test.pem --key=app.local.test-key.pem
+
+# 2. Apply gateway (HTTPS-only) and route
+kubectl apply -f k8s/gateway/gateway.yaml
+kubectl apply -f k8s/gateway/httproutes.yaml
+
+# 3. Check LoadBalancer IP/ports
+kubectl get svc -A | grep -i loadbalancer
+# expect 443/TCP exposed by envoy LB (e.g. 172.19.52.100)
+
+# 4. Add to hosts (Windows)
+# C:\Windows\System32\drivers\etc\hosts
+172.19.52.100  app.local.test
+
+# 5. Test
+curl -I https://app.local.test
+# or open https://app.local.test in Chrome
